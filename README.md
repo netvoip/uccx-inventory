@@ -11,3 +11,13 @@ _Notice!_ The parameters are displayed only if they are explicitly defined and n
 ### Usage
 Define your uccx hostname, api user name and password. Currently Cisco supports only admin users with full rights.  
 Run script by Python interpreter.
+
+### Sample output
+```
+Name: Regions
+Script: SCRIPT[Filials.aef]
+Max sessions: 50
+  P_Hello              Filials/hello_filials.wav
+  Timezone             TZ[Europe/Etc-3]
+  Num_hunt             "11133"
+```
