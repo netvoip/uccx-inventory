@@ -6,7 +6,6 @@ import xmltodict
 import argparse
 import configparser
 urllib3.disable_warnings()
-Timestart = datetime.now()
 Noparams = Errored = 0
 # Limit max app count for testing purposes
 Applimit = 0
