@@ -1,21 +1,22 @@
 ### Introduction
-When you have a lot of applications in your Cisco UCCX and want to make some changes or cleanup your server from obsolete data, it might be a pain to run around all applications to be sure your actions will be safe for active services.  
+When you have a lot of applications in Cisco UCCX and want to make some changes or cleanup server from obsolete data, it might be a pain to run around all applications to be sure your actions will be safe for active configuration.  
 
-This script shows you all prompt and script files that are not used by any application anymore. Also it inventories all applications parameters to plain text so you can quickly check configuration manually. Also this script can be run periodically to archive config and track changes.
+This script will show you all prompt and script files that are not used by any application anymore. Also it inventories all applications parameters to plain text so you can quickly check configuration manually. Also this script could be run periodically to archive config and track changes.
 
-_Notice!_ The parameters are displayed only if they are explicitly defined and not default values. Either set all your parameters or check which default values are used in your scripts.
+_Notice!_ The applications parameters are displayed only if they are explicitly defined and not default values. Either set all your parameters manually or check which default values are used in your scripts.
 
 ### Requirements
-- Python 3 with modules: urllib3, requests, xmltodict, agrparse, configparser (install it by `pip install modulename` command).
+- Python 3 with modules: urllib3, requests, xmltodict, agrparse, configparser (install it by `pip install modulename` command if required).
 
 ### Usage
-Define your uccx hostname, api user name and password. Currently Cisco supports only admin users with full rights.  
-Run script by Python interpreter.
+Define your uccx hostname, api user name and password. Currently Cisco supports only admin user with full rights.  
+Run script with Python interpreter.
 
 ### Sample output
 ```
 Name: Regions
 Script: SCRIPT[Filials.aef]
+Trigger: 77018
 Max sessions: 50
   P_Hello              Filials/hello_filials.wav
   Timezone             TZ[Europe/Etc-3]

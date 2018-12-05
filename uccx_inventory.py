@@ -14,6 +14,7 @@ def ApiRequest(url):
     # Returns API request result
     Response = requests.get((url),
         auth=(apiuser, apipassword), verify=False)
+    Response.encoding = 'utf-8'
     Out = Response.text
     return Out
 
@@ -85,6 +86,26 @@ def GetContent(url, Type, Out):
                     GetContent(Urlpath, Type, Out)
     return Out
 
+def GetTriggers(url):
+    Response = ApiRequest(url)
+    Items = xmltodict.parse(Response)
+    Items = Items['triggers']['trigger']
+    Out = []
+    if len(Items) > 0:
+        for i in Items:
+            Dict = {}
+            Dict = {'dn': i['directoryNumber'], 'enabled': i['triggerEnabled'], 'locale': i['locale'],
+                    'application': i['application']['@name'], 'deviceName': i['deviceName'],
+                    'description': i['description'], 'sessions': i['maxNumOfSessions'],
+                    'idleTimeout': i['idleTimeout'], 'alertingNameAscii': i['alertingNameAscii'],
+                    'dpool': i['devicePool'], 'location': i['location'], 'partition': i['partition'],
+                    'css': i['callingSearchSpace'], 'cssredirect': i['callingSearchSpaceForRedirect'],
+                    'presenceGroup': i['presenceGroup'], 'forwardBusy': i['forwardBusy']['forwardBusyDestination'],
+                    'displayname': i['display'], 'phonemask': i['externalPhoneMaskNumber']
+                    }
+            Out.append(Dict)
+        Out = sorted(Out, key=lambda k: k['dn'])
+    return Out
 
 # Retrieve connection variables
 vars = configparser.ConfigParser()
@@ -99,29 +120,57 @@ will show all files in the system. '-noprompts' '-noscripts' and '-noapps' will 
 ''')
 parser.add_argument('-allprompts', action="store_true", dest="allprompts")
 parser.add_argument('-allscripts', action="store_true", dest="allscripts")
+parser.add_argument('-alltriggers', action="store_true", dest="alltriggers")
 parser.add_argument('-noprompts', action="store_true", dest="noprompts")
 parser.add_argument('-noscripts', action="store_true", dest="noscripts")
+parser.add_argument('-notriggers', action="store_true", dest="notriggers")
 parser.add_argument('-noapps', action="store_true", dest="noapps")
 args = parser.parse_args()
-Usecase = {'applications': not(args.noapps), 'prompts': not(args.noprompts), 'scripts': not(args.noscripts),
-           'allprompts': args.allprompts, 'allscripts': args.allscripts}
+Usecase = {'applications': not(args.noapps), 'prompts': not(args.noprompts), 'allprompts': args.allprompts,
+           'scripts': not(args.noscripts), 'allscripts': args.allscripts,
+           'triggers': not(args.notriggers), 'alltriggers': args.alltriggers}
+
+if Usecase['triggers']:
+    Triggers = GetTriggers('https://{}/adminapi/trigger/'.format(host))
+    Texttr = '\nAll triggers:\n\n'
+    for i in Triggers:
+        Texttr += 'DN: {}'.format(i['dn'])
+        if i['enabled'] == 'false': Texttr += ' (disabled)'
+        if i['forwardBusy']: Texttr += '. Forward Busy to: {}'.format(i['forwardBusy'])
+        Texttr += '\nApplication: {}\n'.format(i['application'])
+        Texttr += 'Description: {}\n--\n'.format(i['description'])
+        Texttr += 'Device name: {}, Sessions: {}\n'.format(i['deviceName'], i['sessions'])
+        Texttr += 'Language: {}\n'.format(i['locale'])
+        Texttr += 'Partition: {}, CSS: {}\n'.format(i['partition'], i['css'])
+        Texttr += 'CSS for Redirect: {}\n'.format(i['cssredirect'])
+        Texttr += 'Device Pool: {}, Location: {}\n'.format(i['dpool'], i['location'])
+        Texttr += 'Display name: {},   ASCII name: {}\n'.format(i['displayname'], i['alertingNameAscii'])
+        if i['phonemask']: Texttr += 'External phone number mask: {}\n'.format(i['phonemask'])
+        Texttr += '\n'
 
 if Usecase['applications']:
     Apps = GetApplications('https://{}/adminapi/application/'.format(host))
-    Text = '\nTotal applications: {}, with no parameters: {}, errors to retrieve info: {}.\n'.format(
+    Textapp = '\nTotal applications: {}, with no parameters: {}, errors to retrieve info: {}.\n'.format(
             len(Apps), Noparams, Errored)
     for i in Apps:
-        Text += '\nName: {}'.format(i['name'])
-        if i['state'] == 'false': Text += ' (disabled)'
-        Text += '\nScript: {}'.format(i['script'])
-        Text += '\nMax sessions: {}\n'.format(i['maxsession'])
+        Textapp += '\nName: {}'.format(i['name'])
+        if i['state'] == 'false': Textapp += ' (disabled)'
+        Textapp += '\nScript: {}'.format(i['script'])
+        if Usecase['triggers']:
+            for trigger in Triggers:
+                if trigger['application'] == i['name']:
+                    Textapp += '\nTrigger: {}'.format(trigger['dn'])
+        Textapp += '\nMax sessions: {}\n'.format(i['maxsession'])
         if len(i['parameters']) == 0:
-            Text += '  -No parameters-\n'
+            Textapp += '  -No parameters-\n'
             Noparams += 1
         else:
             for key, value in i['parameters'].items():
-                Text += '  {:20} {}\n'.format(key, value)
-    print(Text)
+                Textapp += '  {:20} {}\n'.format(key, value)
+    print(Textapp)
+
+if Usecase['alltriggers']:
+    print(Texttr)
 
 if Usecase['prompts']:
     Prompts = []
