@@ -189,7 +189,7 @@ if Usecase['prompts']:
                 Used = 0
                 for app in Apps:
                     for key, param in app['parameters'].items():
-                        if i['name'] in param:
+                        if i['fullpath'].split('/', 2)[-1] == param:
                             Prompts_used.append(i)
                             Used = 1
                             break
@@ -224,7 +224,7 @@ if Usecase['scripts']:
             for i in Scripts:
                 Used = 0
                 for j in Apps:
-                    if i['name'] in j['script']:
+                    if 'SCRIPT[{}]'.format(i['name']) == j['script']:
                         Scripts_used.append(i)
                         Used = 1
                         break
