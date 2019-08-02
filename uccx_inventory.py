@@ -5,7 +5,10 @@ import requests
 import xmltodict
 import argparse
 import configparser
+import os
+
 urllib3.disable_warnings()
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'ECDHE_RSA_AES_128_CBC_SHA1'
 Noparams = Errored = 0
 # Limit max app count for testing purposes
 Applimit = 0
@@ -108,8 +111,10 @@ def GetTriggers(url):
     return Out
 
 # Retrieve connection variables
-vars = configparser.ConfigParser()
-vars.read('uccx_vars.conf')
+path = os.path.dirname(os.path.abspath( __file__ ))
+with open(os.path.join(path, 'uccx_vars.conf')) as config:
+    vars = configparser.ConfigParser()
+    vars.read_file(config)
 host = vars['uccx']['host']
 apiuser = vars['uccx']['apiuser']
 apipassword = vars['uccx']['apipassword']
