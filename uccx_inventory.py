@@ -65,7 +65,10 @@ def GetApplications(url):
 def GetContent(url, Type, Out):
     # Writes prompts/scripts attributes to Out list
     Level1 = xmltodict.parse(ApiRequest(url))
-    Level1 = Level1['Files'][Type]
+    if len(Level1) > 1:
+        Level1 = Level1['Files'][Type]
+    else:
+        Level1 = Level1['Files']
 
     if 'File' in Level1:
         for i in Level1['File']:
